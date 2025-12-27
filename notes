@@ -1,0 +1,17 @@
+spark app notes
+
+- games need to be more interactive, like, when scratching, match 3 to get this much, match 5 to get triple that, etc.
+- winner/loser determinism is revealed in "scratching" the flash. winner scratches have certain pattern matches, loser scratches have others. makes it a more engaging and interactive experience
+- "Strike Lucky" in the homepage font color needs to be changed to white. and the background needs to be white as well. it's currently blue with blue background
+- wallet button after connecting doesn't work. not interactive ux (cursor changing on highlight, etc)
+- need to create component to view past games, game history
+- need to implement ability to buy multiple flashes at once, ex 20 tickets. then the 'scratching' of the flashes is a different ux stage, i.e. "buying tickets" and "revealing tickets" are separate tabs that can be changed to. right now it's buy ticket -> reveal ticket, which needs to be changed.
+"
+- need to implement ability to buy tickets as a gift, gift them to friends. is that possible with the current way the smart contracts are implemented?
+- query inquiring about the smart contract architecture. if the tickets are NFTs that can then be "burned" to be revealed then it should be possible to gift them within the app
+- for gifting, we should be able to gift via username as well as wallet address. is that possible with privy?
+- need to sectionalize the puzzles to differing games, i.e. one type of "ticket" is one type of puzzle, another type of ticket is another type of puzzle, etc. right now it's random puzzle assignment for ticket, the different tickets should also have different odds and different risk profiles, different highest prize optionality.
+- glitch in scratch off ticket where scratched amount erases. should maintain always. not sure why, needs more investigation
+- ticket prices should be denominated in USD, not ETH
+- instance in 'complete the lightning' ticket where the four tiles aren't sticking to the squares making the game impossible to complete
+- game needs match patterns
