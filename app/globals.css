@@ -1,0 +1,46 @@
+@import "tailwindcss";
+
+:root {
+  --background: #0F1419;
+  --foreground: #EDEDED;
+
+  --spark-blue: #5AA8FF;
+  --spark-blue-dark: #3D7ACC;
+  --spark-orange: #FFB84D;
+  --spark-orange-dark: #CC9240;
+  --spark-purple: #7D5FFF;
+
+  --card-bg: #1A1F26;
+  --card-border: #2A3340;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-spark-blue: var(--spark-blue);
+  --color-spark-orange: var(--spark-orange);
+  --color-spark-purple: var(--spark-purple);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  overflow-x: hidden;
+}
+
+@layer utilities {
+  .text-glow {
+    text-shadow: 0 0 20px rgba(90, 168, 255, 0.5);
+  }
+
+  .spark-gradient {
+    background: linear-gradient(135deg, var(--spark-blue) 0%, var(--spark-purple) 100%);
+  }
+
+  .lightning-gradient {
+    background: linear-gradient(135deg, #FFB84D 0%, #FF8C4D 100%);
+  }
+}

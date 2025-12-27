@@ -1,0 +1,2 @@
+@pythnetwork/entropy-sdk-solidity/=lib/pyth-crosschain/target_chains/ethereum/entropy_sdk/solidity/
+forge-std/=lib/forge-std/src/
