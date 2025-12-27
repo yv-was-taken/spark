@@ -35,15 +35,19 @@ export function DragPuzzle({ onComplete }: DragPuzzleProps) {
       Math.abs(x - targetX) < threshold && Math.abs(y - targetY) < threshold;
 
     if (isClose) {
-      setPieces((prev) =>
-        prev.map((p) => (p.id === pieceId ? { ...p, placed: true } : p))
-      );
+      setPieces((prev) => {
+        const newPieces = prev.map((p) =>
+          p.id === pieceId ? { ...p, placed: true } : p
+        );
 
-      // Check if all pieces are placed
-      const allPlaced = pieces.every((p) => p.id === pieceId || p.placed);
-      if (allPlaced) {
-        setTimeout(() => onComplete(), 500);
-      }
+        // Check if all pieces are placed using the NEW state
+        const allPlaced = newPieces.every((p) => p.placed);
+        if (allPlaced) {
+          setTimeout(() => onComplete(), 500);
+        }
+
+        return newPieces;
+      });
     }
   };
 
