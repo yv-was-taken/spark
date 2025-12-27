@@ -89,6 +89,7 @@ function generateLoserPattern(): GridCell[] {
 
 export function ScratchTicket({ isWinner, onComplete, tier }: ScratchTicketProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const canvasInitializedRef = useRef(false);
   const [isDrawing, setIsDrawing] = useState(false);
   const [grid, setGrid] = useState<GridCell[]>([]);
   const [progress, setProgress] = useState(0);
@@ -101,10 +102,10 @@ export function ScratchTicket({ isWinner, onComplete, tier }: ScratchTicketProps
     setGrid(pattern);
   }, [isWinner]);
 
-  // Initialize canvas overlay
+  // Initialize canvas overlay ONLY ONCE when grid is loaded
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas || grid.length === 0) return;
+    if (!canvas || grid.length === 0 || canvasInitializedRef.current) return;
 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
@@ -141,7 +142,10 @@ export function ScratchTicket({ isWinner, onComplete, tier }: ScratchTicketProps
 
     // Set up scratch-off effect
     ctx.globalCompositeOperation = 'destination-out';
-  }, [grid]);
+
+    // Mark as initialized so we don't redraw
+    canvasInitializedRef.current = true;
+  }, [grid.length]);
 
   const checkCellRevealed = (cellIndex: number, scratchX: number, scratchY: number) => {
     const col = cellIndex % 3;

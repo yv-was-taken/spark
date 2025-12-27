@@ -3,14 +3,18 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { TicketPurchase } from './TicketPurchase';
+import { DragPuzzle } from './puzzles/DragPuzzle';
+import { ClickTiles } from './puzzles/ClickTiles';
 import { ScratchTicket } from './puzzles/ScratchTicket';
 import { ResultsDisplay } from './ResultsDisplay';
 
-type GameStage = 'purchase' | 'scratch' | 'results';
+type GameStage = 'purchase' | 'puzzle' | 'results';
+type PuzzleType = 'drag' | 'click' | 'scratch';
 
 interface GameState {
   stage: GameStage;
   ticketTier: 'bronze' | 'silver' | 'gold' | null;
+  puzzleType: PuzzleType | null;
   isWinner: boolean;
   prizeAmount: string | null;
   matchCount: number;
@@ -39,14 +43,19 @@ export function GameFlow() {
   const [gameState, setGameState] = useState<GameState>({
     stage: 'purchase',
     ticketTier: null,
+    puzzleType: null,
     isWinner: false,
     prizeAmount: null,
     matchCount: 0,
   });
 
   const handlePurchase = (tierId: string) => {
-    // Determine win/loss before showing scratch ticket
-    // This creates the underlying pattern (winner patterns vs loser patterns)
+    // Randomly select a puzzle type
+    const puzzleTypes: PuzzleType[] = ['drag', 'click', 'scratch'];
+    const randomPuzzle = puzzleTypes[Math.floor(Math.random() * puzzleTypes.length)];
+
+    // Determine win/loss before showing puzzle
+    // For scratch tickets, this creates the underlying pattern (winner vs loser patterns)
     const tierOdds = {
       bronze: 0.2, // 1 in 5
       silver: 0.25, // 1 in 4
@@ -58,27 +67,36 @@ export function GameFlow() {
       tierOdds[tierId as keyof typeof tierOdds];
 
     setGameState({
-      stage: 'scratch',
+      stage: 'puzzle',
       ticketTier: tierId as 'bronze' | 'silver' | 'gold',
+      puzzleType: randomPuzzle,
       isWinner,
       prizeAmount: null,
       matchCount: 0,
     });
   };
 
-  const handleScratchComplete = (matchCount: number) => {
-    // Calculate prize based on match count
+  const handlePuzzleComplete = (matchCount?: number) => {
+    // Calculate prize based on puzzle type
     let prizeAmount = null;
 
-    if (gameState.isWinner && gameState.ticketTier && matchCount >= 3) {
-      const tierConfig = PRIZE_CONFIG[gameState.ticketTier];
+    if (gameState.isWinner && gameState.ticketTier) {
+      if (gameState.puzzleType === 'scratch' && matchCount && matchCount >= 3) {
+        // For scratch tickets, prize depends on match count
+        const tierConfig = PRIZE_CONFIG[gameState.ticketTier];
 
-      if (matchCount >= 5) {
-        prizeAmount = tierConfig.match5;
-      } else if (matchCount >= 4) {
-        prizeAmount = tierConfig.match4;
-      } else if (matchCount >= 3) {
-        prizeAmount = tierConfig.match3;
+        if (matchCount >= 5) {
+          prizeAmount = tierConfig.match5;
+        } else if (matchCount >= 4) {
+          prizeAmount = tierConfig.match4;
+        } else if (matchCount >= 3) {
+          prizeAmount = tierConfig.match3;
+        }
+      } else {
+        // For other puzzle types, pick a random prize from the tier
+        const tierConfig = PRIZE_CONFIG[gameState.ticketTier];
+        const prizes = [tierConfig.match3, tierConfig.match4, tierConfig.match5];
+        prizeAmount = prizes[Math.floor(Math.random() * prizes.length)];
       }
     }
 
@@ -86,7 +104,7 @@ export function GameFlow() {
       ...gameState,
       stage: 'results',
       prizeAmount,
-      matchCount,
+      matchCount: matchCount || 0,
     });
   };
 
@@ -94,6 +112,7 @@ export function GameFlow() {
     setGameState({
       stage: 'purchase',
       ticketTier: null,
+      puzzleType: null,
       isWinner: false,
       prizeAmount: null,
       matchCount: 0,
@@ -115,20 +134,28 @@ export function GameFlow() {
           </motion.div>
         )}
 
-        {gameState.stage === 'scratch' && gameState.ticketTier && (
+        {gameState.stage === 'puzzle' && gameState.ticketTier && (
           <motion.div
-            key="scratch"
+            key="puzzle"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 1.1 }}
             transition={{ duration: 0.5 }}
             className="rounded-3xl border border-[var(--card-border)] bg-[var(--card-bg)]"
           >
-            <ScratchTicket
-              isWinner={gameState.isWinner}
-              tier={gameState.ticketTier}
-              onComplete={handleScratchComplete}
-            />
+            {gameState.puzzleType === 'drag' && (
+              <DragPuzzle onComplete={() => handlePuzzleComplete()} />
+            )}
+            {gameState.puzzleType === 'click' && (
+              <ClickTiles onComplete={() => handlePuzzleComplete()} />
+            )}
+            {gameState.puzzleType === 'scratch' && (
+              <ScratchTicket
+                isWinner={gameState.isWinner}
+                tier={gameState.ticketTier}
+                onComplete={handlePuzzleComplete}
+              />
+            )}
           </motion.div>
         )}
 

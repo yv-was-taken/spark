@@ -152,7 +152,8 @@ export function TicketPurchase({ onPurchase }: TicketPurchaseProps) {
             <h4 className="mb-2 font-bold text-spark-blue">How It Works</h4>
             <ul className="space-y-1 text-sm text-foreground/70">
               <li>• Choose your ticket tier based on your budget</li>
-              <li>• Scratch to reveal symbols - match 3 or more to win!</li>
+              <li>• Complete a fun interactive puzzle to reveal your prize</li>
+              <li>• Scratch tickets use match-3 mechanics for extra excitement!</li>
               <li>• Winnings are automatically sent to your wallet via smart contract</li>
               <li>• All results are verifiably random using Pyth Entropy</li>
             </ul>
