@@ -20,7 +20,7 @@ const TICKET_TIERS: TicketTier[] = [
     name: 'Bronze Strike',
     price: '0.001',
     priceUSD: 2,
-    maxPrize: '$5',
+    maxPrize: '$25',
     odds: '1 in 5',
     color: 'from-orange-400 to-orange-600',
   },
@@ -29,7 +29,7 @@ const TICKET_TIERS: TicketTier[] = [
     name: 'Silver Spark',
     price: '0.005',
     priceUSD: 10,
-    maxPrize: '$25',
+    maxPrize: '$50',
     odds: '1 in 4',
     color: 'from-gray-300 to-gray-500',
   },
@@ -45,7 +45,7 @@ const TICKET_TIERS: TicketTier[] = [
 ];
 
 interface TicketPurchaseProps {
-  onPurchase: (tierId: string, puzzleType: string) => void;
+  onPurchase: (tierId: string) => void;
 }
 
 export function TicketPurchase({ onPurchase }: TicketPurchaseProps) {
@@ -53,10 +53,7 @@ export function TicketPurchase({ onPurchase }: TicketPurchaseProps) {
 
   const handleBuyTicket = (tierId: string) => {
     setSelectedTier(tierId);
-    // Randomly select a puzzle type
-    const puzzleTypes = ['drag', 'click', 'swipe'];
-    const randomPuzzle = puzzleTypes[Math.floor(Math.random() * puzzleTypes.length)];
-    onPurchase(tierId, randomPuzzle);
+    onPurchase(tierId);
   };
 
   return (
@@ -155,9 +152,9 @@ export function TicketPurchase({ onPurchase }: TicketPurchaseProps) {
             <h4 className="mb-2 font-bold text-spark-blue">How It Works</h4>
             <ul className="space-y-1 text-sm text-foreground/70">
               <li>• Choose your ticket tier based on your budget</li>
-              <li>• Complete a fun interactive puzzle to reveal your prize</li>
+              <li>• Scratch to reveal symbols - match 3 or more to win!</li>
               <li>• Winnings are automatically sent to your wallet via smart contract</li>
-              <li>• All results are verifiably random using Chainlink VRF</li>
+              <li>• All results are verifiably random using Pyth Entropy</li>
             </ul>
           </div>
         </div>
