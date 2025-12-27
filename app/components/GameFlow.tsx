@@ -81,8 +81,8 @@ export function GameFlow() {
     let prizeAmount = null;
 
     if (gameState.isWinner && gameState.ticketTier) {
-      if (gameState.puzzleType === 'scratch' && matchCount && matchCount >= 3) {
-        // For scratch tickets, prize depends on match count
+      if ((gameState.puzzleType === 'scratch' || gameState.puzzleType === 'click') && matchCount && matchCount >= 3) {
+        // For scratch tickets and click tiles, prize depends on match count
         const tierConfig = PRIZE_CONFIG[gameState.ticketTier];
 
         if (matchCount >= 5) {
@@ -93,7 +93,7 @@ export function GameFlow() {
           prizeAmount = tierConfig.match3;
         }
       } else {
-        // For other puzzle types, pick a random prize from the tier
+        // For drag puzzle, pick a random prize from the tier
         const tierConfig = PRIZE_CONFIG[gameState.ticketTier];
         const prizes = [tierConfig.match3, tierConfig.match4, tierConfig.match5];
         prizeAmount = prizes[Math.floor(Math.random() * prizes.length)];
@@ -147,7 +147,11 @@ export function GameFlow() {
               <DragPuzzle onComplete={() => handlePuzzleComplete()} />
             )}
             {gameState.puzzleType === 'click' && (
-              <ClickTiles onComplete={() => handlePuzzleComplete()} />
+              <ClickTiles
+                isWinner={gameState.isWinner}
+                tier={gameState.ticketTier}
+                onComplete={handlePuzzleComplete}
+              />
             )}
             {gameState.puzzleType === 'scratch' && (
               <ScratchTicket
