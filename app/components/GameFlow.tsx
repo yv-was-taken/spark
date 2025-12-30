@@ -7,6 +7,7 @@ import { DragPuzzle } from './puzzles/DragPuzzle';
 import { ClickTiles } from './puzzles/ClickTiles';
 import { ScratchTicket } from './puzzles/ScratchTicket';
 import { ResultsDisplay } from './ResultsDisplay';
+import { useGameHistory } from '../lib/hooks/useGameHistory';
 
 type GameStage = 'purchase' | 'puzzle' | 'results';
 type PuzzleType = 'drag' | 'click' | 'scratch';
@@ -40,6 +41,7 @@ const PRIZE_CONFIG = {
 };
 
 export function GameFlow() {
+  const { addGame } = useGameHistory();
   const [gameState, setGameState] = useState<GameState>({
     stage: 'purchase',
     ticketTier: null,
@@ -98,6 +100,16 @@ export function GameFlow() {
         const prizes = [tierConfig.match3, tierConfig.match4, tierConfig.match5];
         prizeAmount = prizes[Math.floor(Math.random() * prizes.length)];
       }
+    }
+
+    // Save game to history
+    if (gameState.ticketTier && gameState.puzzleType) {
+      addGame({
+        ticketTier: gameState.ticketTier,
+        puzzleType: gameState.puzzleType,
+        isWinner,
+        prizeAmount,
+      });
     }
 
     setGameState({
