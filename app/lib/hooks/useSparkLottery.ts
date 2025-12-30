@@ -1,7 +1,7 @@
 'use client';
 
 import { useWalletClient, usePublicClient, useWatchContractEvent } from 'wagmi';
-import { parseEther, encodePacked, keccak256 } from 'viem';
+import { parseEther, encodePacked, keccak256, decodeEventLog } from 'viem';
 import { LOTTERY_CONTRACT_ADDRESS, LOTTERY_ABI, TicketTier } from '../contracts';
 import { useState, useCallback } from 'react';
 
@@ -50,10 +50,11 @@ export function useSparkLottery() {
         }
 
         // Decode the TicketPurchased event to get the ticket ID
-        const decodedLog = publicClient.parseLogs({
+        const decodedLog = decodeEventLog({
           abi: LOTTERY_ABI,
-          logs: [log],
-        })[0];
+          data: log.data,
+          topics: log.topics,
+        });
 
         const ticketId = decodedLog.args.ticketId;
 
