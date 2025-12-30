@@ -95,11 +95,10 @@ export function TicketPurchase({ onPurchase }: TicketPurchaseProps) {
               <div className="mb-6">
                 <div className="flex items-baseline gap-2">
                   <span className="text-4xl font-bold text-spark-blue">
-                    {tier.price}
+                    ${tier.priceUSD}
                   </span>
-                  <span className="text-xl text-foreground/50">ETH</span>
+                  <span className="text-xl text-foreground/50">USD</span>
                 </div>
-                <p className="text-sm text-foreground/50">≈ ${tier.priceUSD} USD</p>
               </div>
 
               {/* Stats */}
