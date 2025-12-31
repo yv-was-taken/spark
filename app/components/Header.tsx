@@ -2,13 +2,13 @@
 
 import { useState } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
-import { Zap, Wallet, History } from 'lucide-react';
+import { Zap, User, Wallet, History } from 'lucide-react';
 import Image from 'next/image';
 import { GameHistory } from './GameHistory';
 import { useGameHistory } from '../lib/hooks/useGameHistory';
 
 export function Header() {
-  const { ready, authenticated, login, logout, user } = usePrivy();
+  const { ready, authenticated, login, logout, exportWallet, user } = usePrivy();
   const { history, totalWinnings } = useGameHistory();
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
 
@@ -53,11 +53,19 @@ export function Header() {
                   {user?.wallet?.address?.slice(-4)}
                 </span>
               </div>
+
+              <button
+                onClick={exportWallet}
+                className="flex items-center justify-center rounded-full bg-[var(--card-bg)] p-2.5 transition-all hover:bg-[var(--card-bg)]/80 hover:border-spark-blue border border-transparent active:scale-95"
+                title="Account"
+              >
+                <User className="h-5 w-5 text-spark-blue" />
+              </button>
               <button
                 onClick={logout}
                 className="rounded-full border border-[var(--card-border)] px-4 py-2 text-sm font-medium transition-colors hover:border-spark-blue hover:bg-[var(--card-bg)]"
               >
-                Disconnect
+                Logout
               </button>
             </div>
           ) : (
