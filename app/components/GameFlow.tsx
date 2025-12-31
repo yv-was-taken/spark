@@ -5,47 +5,59 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { TicketPurchase } from './TicketPurchase';
 import { DragPuzzle } from './puzzles/DragPuzzle';
 import { ClickTiles } from './puzzles/ClickTiles';
-import { SwipeReveal } from './puzzles/SwipeReveal';
+import { ScratchTicket } from './puzzles/ScratchTicket';
 import { ResultsDisplay } from './ResultsDisplay';
+import { useGameHistory } from '../lib/hooks/useGameHistory';
 
 type GameStage = 'purchase' | 'puzzle' | 'results';
-type PuzzleType = 'drag' | 'click' | 'swipe';
+type PuzzleType = 'drag' | 'click' | 'scratch';
 
 interface GameState {
   stage: GameStage;
-  ticketTier: string | null;
+  ticketTier: 'bronze' | 'silver' | 'gold' | null;
   puzzleType: PuzzleType | null;
   isWinner: boolean;
   prizeAmount: string | null;
+  matchCount: number;
 }
 
-const PRIZE_AMOUNTS = {
-  bronze: ['$5', '$10', '$25'],
-  silver: ['$10', '$25', '$50'],
-  gold: ['$25', '$50', '$100'],
+// Prize amounts based on match count
+const PRIZE_CONFIG = {
+  bronze: {
+    match3: '$5',
+    match4: '$10',
+    match5: '$25',
+  },
+  silver: {
+    match3: '$10',
+    match4: '$25',
+    match5: '$50',
+  },
+  gold: {
+    match3: '$25',
+    match4: '$50',
+    match5: '$100',
+  },
 };
 
 export function GameFlow() {
+  const { addGame } = useGameHistory();
   const [gameState, setGameState] = useState<GameState>({
     stage: 'purchase',
     ticketTier: null,
     puzzleType: null,
     isWinner: false,
     prizeAmount: null,
+    matchCount: 0,
   });
 
-  const handlePurchase = (tierId: string, puzzleType: string) => {
-    setGameState({
-      stage: 'puzzle',
-      ticketTier: tierId,
-      puzzleType: puzzleType as PuzzleType,
-      isWinner: false,
-      prizeAmount: null,
-    });
-  };
+  const handlePurchase = (tierId: string) => {
+    // Randomly select a puzzle type
+    const puzzleTypes: PuzzleType[] = ['drag', 'click', 'scratch'];
+    const randomPuzzle = puzzleTypes[Math.floor(Math.random() * puzzleTypes.length)];
 
-  const handlePuzzleComplete = () => {
-    // Simulate game outcome (in production, this would come from smart contract)
+    // Determine win/loss before showing puzzle
+    // For scratch tickets, this creates the underlying pattern (winner vs loser patterns)
     const tierOdds = {
       bronze: 0.2, // 1 in 5
       silver: 0.25, // 1 in 4
@@ -54,20 +66,57 @@ export function GameFlow() {
 
     const isWinner =
       Math.random() <
-      tierOdds[gameState.ticketTier as keyof typeof tierOdds];
+      tierOdds[tierId as keyof typeof tierOdds];
 
+    setGameState({
+      stage: 'puzzle',
+      ticketTier: tierId as 'bronze' | 'silver' | 'gold',
+      puzzleType: randomPuzzle,
+      isWinner,
+      prizeAmount: null,
+      matchCount: 0,
+    });
+  };
+
+  const handlePuzzleComplete = (matchCount?: number) => {
+    // Calculate prize based on puzzle type
     let prizeAmount = null;
-    if (isWinner && gameState.ticketTier) {
-      const prizes =
-        PRIZE_AMOUNTS[gameState.ticketTier as keyof typeof PRIZE_AMOUNTS];
-      prizeAmount = prizes[Math.floor(Math.random() * prizes.length)];
+
+    if (gameState.isWinner && gameState.ticketTier) {
+      if ((gameState.puzzleType === 'scratch' || gameState.puzzleType === 'click') && matchCount && matchCount >= 3) {
+        // For scratch tickets and click tiles, prize depends on match count
+        const tierConfig = PRIZE_CONFIG[gameState.ticketTier];
+
+        if (matchCount >= 5) {
+          prizeAmount = tierConfig.match5;
+        } else if (matchCount >= 4) {
+          prizeAmount = tierConfig.match4;
+        } else if (matchCount >= 3) {
+          prizeAmount = tierConfig.match3;
+        }
+      } else {
+        // For drag puzzle, pick a random prize from the tier
+        const tierConfig = PRIZE_CONFIG[gameState.ticketTier];
+        const prizes = [tierConfig.match3, tierConfig.match4, tierConfig.match5];
+        prizeAmount = prizes[Math.floor(Math.random() * prizes.length)];
+      }
+    }
+
+    // Save game to history
+    if (gameState.ticketTier && gameState.puzzleType) {
+      addGame({
+        ticketTier: gameState.ticketTier,
+        puzzleType: gameState.puzzleType,
+        isWinner,
+        prizeAmount,
+      });
     }
 
     setGameState({
       ...gameState,
       stage: 'results',
-      isWinner,
       prizeAmount,
+      matchCount: matchCount || 0,
     });
   };
 
@@ -78,6 +127,7 @@ export function GameFlow() {
       puzzleType: null,
       isWinner: false,
       prizeAmount: null,
+      matchCount: 0,
     });
   };
 
@@ -96,7 +146,7 @@ export function GameFlow() {
           </motion.div>
         )}
 
-        {gameState.stage === 'puzzle' && (
+        {gameState.stage === 'puzzle' && gameState.ticketTier && (
           <motion.div
             key="puzzle"
             initial={{ opacity: 0, scale: 0.9 }}
@@ -106,13 +156,21 @@ export function GameFlow() {
             className="rounded-3xl border border-[var(--card-border)] bg-[var(--card-bg)]"
           >
             {gameState.puzzleType === 'drag' && (
-              <DragPuzzle onComplete={handlePuzzleComplete} />
+              <DragPuzzle onComplete={() => handlePuzzleComplete()} />
             )}
             {gameState.puzzleType === 'click' && (
-              <ClickTiles onComplete={handlePuzzleComplete} />
+              <ClickTiles
+                isWinner={gameState.isWinner}
+                tier={gameState.ticketTier}
+                onComplete={handlePuzzleComplete}
+              />
             )}
-            {gameState.puzzleType === 'swipe' && (
-              <SwipeReveal onComplete={handlePuzzleComplete} />
+            {gameState.puzzleType === 'scratch' && (
+              <ScratchTicket
+                isWinner={gameState.isWinner}
+                tier={gameState.ticketTier}
+                onComplete={handlePuzzleComplete}
+              />
             )}
           </motion.div>
         )}
